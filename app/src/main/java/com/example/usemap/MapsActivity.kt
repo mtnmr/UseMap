@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PackageManagerCompat
@@ -58,35 +59,55 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun requestLocationPermission() {
-        //一度許可を求めたことがあって拒否されている場合
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)){
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.
-            permission.ACCESS_FINE_LOCATION), MY_PERMISSION_REQUEST_FINE_LOCATION)
-        }else{
-            //まだ許可を求めていない場合
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.
-            permission.ACCESS_FINE_LOCATION), MY_PERMISSION_REQUEST_FINE_LOCATION)
+    private val launcher = registerForActivityResult(ActivityResultContracts.RequestPermission()
+    ){ isGranted: Boolean ->
+        if (isGranted) {
+            myLocationEnable()
+        } else {
+            Toast.makeText(this, "位置情報は表示できません", Toast.LENGTH_LONG).show()
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode){
-            MY_PERMISSION_REQUEST_FINE_LOCATION ->{
-                if (permissions.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    myLocationEnable()
-                }else{
-                    showToast("現在位置は表示できません")
-                }
-            }
+    private fun requestLocationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        ) {
+            launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
+
+//        //一度許可を求めたことがあって拒否されている場合
+//        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+//                android.Manifest.permission.ACCESS_FINE_LOCATION)){
+//            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.
+//            permission.ACCESS_FINE_LOCATION), MY_PERMISSION_REQUEST_FINE_LOCATION)
+//        }else{
+//            //まだ許可を求めていない場合
+//            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.
+//            permission.ACCESS_FINE_LOCATION), MY_PERMISSION_REQUEST_FINE_LOCATION)
+//        }
+
     }
+
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<out String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        when (requestCode){
+//            MY_PERMISSION_REQUEST_FINE_LOCATION ->{
+//                if (permissions.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+//                    myLocationEnable()
+//                }else{
+//                    showToast("現在位置は表示できません")
+//                }
+//            }
+//        }
+//    }
 
     private fun myLocationEnable() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.
